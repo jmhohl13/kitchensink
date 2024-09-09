@@ -8,11 +8,13 @@ import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 
 
 import java.util.List;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 @DataJpaTest
 public class MemberRepositoryTests {
+
     @Autowired
     private MemberRepository memberRepository;
 
@@ -25,9 +27,9 @@ public class MemberRepositoryTests {
 
         memberRepository.save(member);
 
-        Member foundMember = memberRepository.findByEmail("john.doe@example.com");
-        assertNotNull(foundMember);
-        assertEquals("John Doe", foundMember.getName());
+        Optional<Member> foundMember = memberRepository.findByEmail("john.doe@example.com");
+        assertTrue(foundMember.isPresent(), "Member should be present");
+        assertEquals("John Doe", foundMember.get().getName());
     }
 
     @Test

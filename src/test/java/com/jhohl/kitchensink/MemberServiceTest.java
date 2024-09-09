@@ -4,6 +4,8 @@ import com.jhohl.kitchensink.data.MemberRepository;
 import com.jhohl.kitchensink.model.Member;
 import com.jhohl.kitchensink.service.MemberService;
 
+import jakarta.validation.*;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -11,11 +13,15 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.boot.test.context.SpringBootTest;
 
+
+import java.util.Arrays;
 import java.util.Optional;
+import java.util.List;
+import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 
 @ExtendWith(MockitoExtension.class)
@@ -27,6 +33,21 @@ public class MemberServiceTest {
     @InjectMocks
     private MemberService memberService;
 
+    private static Validator validator;
+
+    @BeforeAll
+    static void setupValidatorInstance() {
+        ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
+        validator = factory.getValidator();
+    }
+
+    @Test
+    void testGetMembers() {
+        when(memberRepository.findAll()).thenReturn(Arrays.asList(new Member(), new Member()));
+        List<Member> members = memberService.getMembers();
+        assertEquals(2, members.size());
+        verify(memberRepository).findAll();
+    }
 
     @Test
     void testFindMemberById() {
@@ -52,4 +73,28 @@ public class MemberServiceTest {
         assertNotNull(savedMember);
         assertEquals("John Doe", savedMember.getName());
     }
+
+    @Test
+    void testDeleteMember() {
+        Long memberId = 1L;
+        memberService.deleteMember(memberId);
+        verify(memberRepository).deleteById(memberId);
+    }
+
+    @Test
+    void testRegisterNewMember() {
+        Member newMember = new Member();
+        newMember.setEmail("new@example.com");
+        when(memberRepository.save(any(Member.class))).thenReturn(newMember);
+
+        Member registeredMember = memberService.registerNewMember(newMember);
+
+        assertNotNull(registeredMember);
+        assertEquals("new@example.com", registeredMember.getEmail());
+        verify(memberRepository).save(newMember);
+    }
+
+
+
+
 }

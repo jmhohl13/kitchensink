@@ -35,7 +35,7 @@ public class Member implements Serializable {
     private String email;
 
     @NotNull
-    @Size(min = 10, max = 12)
+    @Size(min = 10, max = 12, message = "Must be between 10-12 characters")
     @Digits(fraction = 0, integer = 12)
     @Column(name = "phone_number")
     private String phoneNumber;
