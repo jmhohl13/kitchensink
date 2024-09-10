@@ -4,6 +4,7 @@ import com.jhohl.kitchensink.data.MemberRepository;
 import com.jhohl.kitchensink.model.Member;
 import com.jhohl.kitchensink.service.MemberService;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,6 +25,13 @@ public class MemberServiceIntegrationTest {
     @Autowired
     private MemberService memberService;
 
+    @Autowired
+    private MemberRepository memberRepository;
+
+    @BeforeEach
+    public void setup() {
+        memberRepository.deleteAll();
+    }
     @Test
     public void testFindAllOrderedByName() {
         Member m1 = new Member("Alice", "alice@example.com", "1234567890");

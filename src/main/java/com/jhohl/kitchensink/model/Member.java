@@ -7,12 +7,8 @@ import jakarta.persistence.UniqueConstraint;
 import jakarta.persistence.Id;
 import jakarta.persistence.Column;
 
-import jakarta.validation.constraints.NotEmpty;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Pattern;
-import jakarta.validation.constraints.Size;
-import jakarta.validation.constraints.Digits;
-import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.*;
+
 import java.io.Serializable;
 
 @SuppressWarnings("serial")
@@ -25,13 +21,14 @@ public class Member implements Serializable {
     private Long id;
 
     @NotNull
-    @Size(min = 1, max = 25)
+
+    @Size(min = 1, max = 25, message= " Size must be between 1 and 25")
     @Pattern(regexp = "[^0-9]*", message = "Must not contain numbers")
     private String name;
 
     @NotNull
-    @NotEmpty
-    @Email
+    @NotEmpty(message = "Must not be empty")
+    @Email(message = "Must be a well-formed email address")
     private String email;
 
     @NotNull

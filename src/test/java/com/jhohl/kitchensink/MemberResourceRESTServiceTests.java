@@ -34,7 +34,7 @@ public class MemberResourceRESTServiceTests {
     }
     @Test
     public void shouldListAllMembers() throws Exception {
-        mockMvc.perform(MockMvcRequestBuilders.get("/members"))
+        mockMvc.perform(MockMvcRequestBuilders.get("/rest/members"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$", hasSize(2))) // Assuming there are 2 members for the test scenario
                 .andDo(print());
@@ -43,7 +43,7 @@ public class MemberResourceRESTServiceTests {
     @Test
     public void shouldCreateMember() throws Exception {
         String memberJson = "{\"name\":\"John Doe\",\"email\":\"justin@example.com\",\"phoneNumber\":\"1234567899\"}";
-        mockMvc.perform(MockMvcRequestBuilders.post("/members")
+        mockMvc.perform(MockMvcRequestBuilders.post("/rest/members")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(memberJson))
                 .andExpect(status().isCreated())
@@ -53,7 +53,7 @@ public class MemberResourceRESTServiceTests {
 
     @Test
     public void shouldReturnNotFoundWhenMemberDoesNotExist() throws Exception {
-        mockMvc.perform(MockMvcRequestBuilders.get("/members/999"))
+        mockMvc.perform(MockMvcRequestBuilders.get("/rest/members/999"))
                 .andExpect(status().isNotFound())
                 .andDo(print());
     }
@@ -61,7 +61,7 @@ public class MemberResourceRESTServiceTests {
     @Test
     public void shouldHandleInvalidMemberData() throws Exception {
         String invalidMemberJson = "{\"name\":\"\",\"email\":\"notanemail\",\"phoneNumber\":\"123\"}";
-        mockMvc.perform(MockMvcRequestBuilders.post("/members")
+        mockMvc.perform(MockMvcRequestBuilders.post("/rest/members")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(invalidMemberJson))
                 .andExpect(status().isBadRequest()) // Check for validation response
@@ -71,7 +71,7 @@ public class MemberResourceRESTServiceTests {
     @Test
     public void shouldDeleteMember() throws Exception {
         // Assume there's a member with ID 1
-        mockMvc.perform(MockMvcRequestBuilders.delete("/members/1"))
+        mockMvc.perform(MockMvcRequestBuilders.delete("/rest/members/1"))
                 .andExpect(status().isOk())
                 .andDo(print());
     }
@@ -79,7 +79,7 @@ public class MemberResourceRESTServiceTests {
     @Test
     public void shouldUpdateMember() throws Exception {
         String memberJson = "{\"name\":\"Updated Name\",\"email\":\"update@example.com\",\"phoneNumber\":\"9876543210\"}";
-        mockMvc.perform(MockMvcRequestBuilders.put("/members/1")
+        mockMvc.perform(MockMvcRequestBuilders.put("/rest/members/1")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(memberJson))
                 .andExpect(status().isOk())

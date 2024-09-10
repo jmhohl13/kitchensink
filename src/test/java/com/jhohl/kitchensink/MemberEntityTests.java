@@ -57,10 +57,12 @@ public class MemberEntityTests {
     @Test
     public void whenEmailInvalid_thenValidationFails() {
         Member member = new Member();
+        member.setName("John Doe");
+        member.setPhoneNumber("1234567890");
         member.setEmail("bad-email");
         Set<ConstraintViolation<Member>> violations = validator.validate(member);
         assertFalse(violations.isEmpty());
-        assertTrue(violations.stream().anyMatch(v -> v.getMessage().contains("must be a well-formed email address")));
+        assertTrue(violations.stream().anyMatch(v -> v.getMessage().contains("Must be a well-formed email address")));
     }
 
     @Test
