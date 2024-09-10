@@ -3,6 +3,7 @@ package com.jhohl.kitchensink.service;
 import com.jhohl.kitchensink.data.MemberRepository;
 import com.jhohl.kitchensink.model.Member;
 import jakarta.validation.Valid;
+import jakarta.validation.ValidationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,6 +17,7 @@ import java.util.Optional;
 public class MemberService {
 
     private final MemberRepository memberRepository;
+
     private static final Logger logger = LoggerFactory.getLogger(MemberService.class);
 
     @Autowired
@@ -72,13 +74,24 @@ public class MemberService {
     }
 
     @Transactional
-    public Member registerNewMember(@Valid Member newMember) {
+    public Member registerNewMember(@Valid Member newMember) throws ValidationException{
         logger.info("Registering new member: {}", newMember);
 
+        validateMember(newMember);
         Member registered = memberRepository.save(newMember);
 
         logger.info("New member registered: {}", registered);
         return registered;
+    }
+
+    private void validateMember(Member member) throws ValidationException {
+        if (emailAlreadyExists(member.getEmail())) {
+            throw new ValidationException("Unique Email Violation");
+        }
+    }
+
+    private boolean emailAlreadyExists(String email) {
+        return memberRepository.findByEmail(email).isPresent();
     }
 
     @Transactional
