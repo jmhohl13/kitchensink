@@ -1,25 +1,36 @@
 package com.jhohl.kitchensink;
 
+import com.jhohl.kitchensink.data.MemberRepository;
 import com.jhohl.kitchensink.model.Member;
+import com.jhohl.kitchensink.service.SequenceGeneratorService;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validation;
 import jakarta.validation.Validator;
 import jakarta.validation.ValidatorFactory;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.data.mongo.DataMongoTest;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.ActiveProfiles;
 
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.when;
 
-@DataJpaTest
+@ActiveProfiles("test")
+@DataMongoTest
 public class MemberEntityTests {
 
+    @MockBean
+    private SequenceGeneratorService sequenceGeneratorService;
+
     @Autowired
-    private TestEntityManager entityManager;
+    private MemberRepository memberRepository;
     private static Validator validator;
 
 
@@ -29,12 +40,14 @@ public class MemberEntityTests {
         validator = factory.getValidator();
     }
 
+    @BeforeEach
+    public void setUp() {
+        // Mock the sequence generator to return an incremental ID
+        when(sequenceGeneratorService.generateSequence(Member.SEQUENCE_NAME)).thenReturn(1L);
+    }
     @Test
     public void whenallValid_thenValidationPasses() {
-        Member member = new Member();
-        member.setName("John Doe");
-        member.setPhoneNumber("1234567890");
-        member.setEmail("good.email@example.com");
+        Member member = new Member("John Doe", "john@example.com", "1234567890");
         Set<ConstraintViolation<Member>> violations = validator.validate(member);
         assertTrue(violations.isEmpty());
     }
@@ -45,8 +58,8 @@ public class MemberEntityTests {
         member.setName("John Doe");
         member.setEmail("john.doe@example.com");
         member.setPhoneNumber("1234567890");
-
-        Member savedMember = entityManager.persistFlushFind(member);
+        member.setId(sequenceGeneratorService.generateSequence(Member.SEQUENCE_NAME));
+        Member savedMember = memberRepository.save(member);
 
         assertNotNull(savedMember.getId());
         assertEquals("John Doe", savedMember.getName());

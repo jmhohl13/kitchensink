@@ -1,27 +1,20 @@
 package com.jhohl.kitchensink.model;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.Table;
-import jakarta.persistence.UniqueConstraint;
-import jakarta.persistence.Id;
-import jakarta.persistence.Column;
+import org.springframework.data.annotation.Id;
 
 import jakarta.validation.constraints.*;
+import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.io.Serializable;
 
-@SuppressWarnings("serial")
-@Entity
-@Table(uniqueConstraints = @UniqueConstraint(columnNames = "email"))
+@Document(collection = "members")
 public class Member implements Serializable {
 
+    public static final String SEQUENCE_NAME = "member_sequence";
     @Id
-    @GeneratedValue
     private Long id;
 
     @NotNull
-
     @Size(min = 1, max = 25, message= " Size must be between 1 and 25")
     @Pattern(regexp = "[^0-9]*", message = "Must not contain numbers")
     private String name;
@@ -34,8 +27,9 @@ public class Member implements Serializable {
     @NotNull
     @Size(min = 10, max = 12, message = "Must be between 10-12 characters")
     //@Digits(fraction = 0, integer = 12)
-    @Column(name = "phone_number")
+
     private String phoneNumber;
+
 
     public Member(){
 

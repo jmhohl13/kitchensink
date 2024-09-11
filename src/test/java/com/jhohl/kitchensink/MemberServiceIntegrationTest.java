@@ -4,6 +4,7 @@ import com.jhohl.kitchensink.data.MemberRepository;
 import com.jhohl.kitchensink.model.Member;
 import com.jhohl.kitchensink.service.MemberService;
 
+import com.jhohl.kitchensink.service.SequenceGeneratorService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -11,16 +12,21 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+@ActiveProfiles("test")
 @ExtendWith(SpringExtension.class)
 @SpringBootTest
 public class MemberServiceIntegrationTest {
 
+
+    @Autowired
+    private SequenceGeneratorService sequenceGeneratorService;
 
     @Autowired
     private MemberService memberService;
@@ -35,7 +41,10 @@ public class MemberServiceIntegrationTest {
     @Test
     public void testFindAllOrderedByName() {
         Member m1 = new Member("Alice", "alice@example.com", "1234567890");
+        m1.setId(sequenceGeneratorService.generateSequence(Member.SEQUENCE_NAME));
         Member m2 = new Member("Bob", "bob@example.com", "0987654321");
+        m2.setId(sequenceGeneratorService.generateSequence(Member.SEQUENCE_NAME));
+
         memberService.registerNewMember(m1);
         memberService.registerNewMember(m2);
 
@@ -61,7 +70,7 @@ public class MemberServiceIntegrationTest {
         member.setName("John Doe");
         member.setEmail("john@example.com");
         member.setPhoneNumber("1234567890");
-
+        member.setId(sequenceGeneratorService.generateSequence(Member.SEQUENCE_NAME));
         // Saving the member
         member = memberService.registerNewMember(member);
 
@@ -79,6 +88,8 @@ public class MemberServiceIntegrationTest {
         member.setName("Jane Doe");
         member.setEmail("jane@example.com");
         member.setPhoneNumber("1234567890");
+        member.setId(sequenceGeneratorService.generateSequence(Member.SEQUENCE_NAME));
+
         member = memberService.saveMember(member);
 
         // Ensure member is saved

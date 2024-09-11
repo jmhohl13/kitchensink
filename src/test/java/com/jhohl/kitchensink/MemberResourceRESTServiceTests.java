@@ -3,21 +3,27 @@ package com.jhohl.kitchensink;
 import com.jayway.jsonpath.JsonPath;
 import com.jhohl.kitchensink.data.MemberRepository;
 import com.jhohl.kitchensink.model.Member;
+import com.jhohl.kitchensink.service.MemberService;
+import com.jhohl.kitchensink.service.SequenceGeneratorService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
 import static org.hamcrest.Matchers.hasSize;
+import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+@ActiveProfiles("test")
 @SpringBootTest
 @AutoConfigureMockMvc
 public class MemberResourceRESTServiceTests {
@@ -28,11 +34,26 @@ public class MemberResourceRESTServiceTests {
     @Autowired
     private MemberRepository memberRepository;
 
+    @Autowired
+    private SequenceGeneratorService sequenceGeneratorService;
+
+    @Autowired
+    private MemberService memberService;
+
     @BeforeEach
     public void setup() {
         memberRepository.deleteAll();
-        memberRepository.save(new Member("Alice", "alice@example.com", "1234567890"));
-        memberRepository.save(new Member("Bob", "bob@example.com", "0987654321"));
+        Member m1 = new Member("Alice", "alice@example.com", "1234567890");
+        m1.setId(sequenceGeneratorService.generateSequence(Member.SEQUENCE_NAME));
+        Member m2 = new Member("Bob", "bob@example.com", "0987654321");
+        m2.setId(sequenceGeneratorService.generateSequence(Member.SEQUENCE_NAME));
+
+        memberService.registerNewMember(m1);
+        memberService.registerNewMember(m2);
+
+//        when(sequenceGeneratorService.generateSequence(Member.SEQUENCE_NAME)).thenReturn(1L, 2L);
+//        memberRepository.save(new Member("Alice", "alice@example.com", "1234567890"));
+//        memberRepository.save(new Member("Bob", "bob@example.com", "0987654321"));
     }
     @Test
     public void shouldListAllMembers() throws Exception {

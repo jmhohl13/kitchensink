@@ -60,7 +60,7 @@ public class MemberService {
     public List<Member> getAllMembersOrderedbyName(){
 
         logger.debug("Retrieving all members ordered by name");
-        return memberRepository.findAllOrderedByName();
+        return memberRepository.findAllByOrderByNameAsc();
     }
 
     @Transactional

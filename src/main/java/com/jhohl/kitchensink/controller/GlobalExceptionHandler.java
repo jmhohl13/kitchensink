@@ -45,4 +45,5 @@ public class GlobalExceptionHandler {
     public ResponseEntity<Object> handleDataIntegrityException(DataIntegrityViolationException ex) {
         return ResponseEntity.badRequest().body("Invalid data input");
     }
+
 }
