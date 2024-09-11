@@ -86,7 +86,7 @@ public class MemberService {
 
     private void validateMember(Member member) throws ValidationException {
         if (emailAlreadyExists(member.getEmail())) {
-            throw new ValidationException("Unique Email Violation");
+            throw new ValidationException("A user with this email already exists!");
         }
     }
 

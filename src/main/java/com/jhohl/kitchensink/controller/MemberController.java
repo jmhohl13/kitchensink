@@ -17,7 +17,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import java.util.List;
 
 @Controller
-@RequestMapping("/members")
+@RequestMapping()
 public class MemberController {
 
     @Autowired
@@ -30,30 +30,30 @@ public class MemberController {
         return new Member();
     }
 
-    @GetMapping
-    public String listMembers(Model model) {
+    @GetMapping()
+    public String home(Model model) {
+        model.addAttribute("newMember", new Member());
         List<Member> members = memberService.getMembers();
         model.addAttribute("members", members);
-        return "members/list"; // Refers to a Thymeleaf or JSP page that displays members
+        return "home"; // Refers to a Thymeleaf or JSP page that displays members
     }
 
-    @PostMapping()
-    public String registerMember(@Valid @ModelAttribute("member") Member member, BindingResult result, RedirectAttributes redirectAttrs) {
-        if (result.hasErrors()) {
-            // Include errors and member information in the redirect to pre-populate the form and show errors
-            redirectAttrs.addFlashAttribute("org.springframework.validation.BindingResult.member", result);
-            redirectAttrs.addFlashAttribute("member", member);
-            return "redirect:/members"; // Assume there's a registration form at this path
-        }
 
-        try {
+    @PostMapping
+    public String registerMember(@Valid @ModelAttribute("newMember") Member member, BindingResult result, Model model, RedirectAttributes redirectAttrs) {
+        if (result.hasErrors()) {
+            model.addAttribute("newMember", member);
+            model.addAttribute("members", memberService.getMembers());
+            return "home";
+        }
+        try{
             memberService.registerNewMember(member);
             redirectAttrs.addFlashAttribute("successMessage", "Member registered successfully!");
-            return "redirect:/members";
-        } catch (ValidationException e) {
-            redirectAttrs.addFlashAttribute("errorMessage", "Registration failed: " + e.getMessage());
-            return "redirect:/members";
+        } catch(ValidationException e){
+            redirectAttrs.addFlashAttribute("errorMessage", e.getMessage());
         }
+
+        return "redirect:/";
     }
 
     private String getRootErrorMessage(Exception e) {

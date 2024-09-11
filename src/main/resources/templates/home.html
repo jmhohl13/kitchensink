@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Member Registration</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}"/>
+</head>
+<body>
+
+<div id="container">
+    <div id="header">
+        <h1>Welcome to Spring Boot!</h1>
+        <p>You have successfully deployed a Spring Boot Application..</p>
+    </div>
+    <div class="dualbrand">
+        <img height="200" th:src="@{/gfx/spring_logo.png}" width="300"/>
+    </div>
+    <div id="content">
+        <!-- Registration Form -->
+        <h2>Register New Member</h2>
+        <form method="post" th:action="@{/}" th:object="${newMember}" novalidate>
+            <div class="form-group">
+                <label for="name">Name:</label>
+                <div class="input-error-container">
+                    <input id="name" placeholder="Name" th:field="*{name}" type="text"/>
+                    <div th:if="${#fields.hasErrors('name')}" th:errors="*{name}" class="error"></div>
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="email">Email:</label>
+                <div class="input-error-container">
+                    <input id="email" placeholder="Email" th:field="*{email}" type="email"/>
+                    <div th:if="${#fields.hasErrors('email')}" th:errors="*{email}" class="error"></div>
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="phoneNumber">Phone Number:</label>
+                <div class="input-error-container">
+                <input id="phoneNumber" placeholder="Phone Number" th:field="*{phoneNumber}" type="text"/>
+                <div th:if="${#fields.hasErrors('phoneNumber')}" th:errors="*{phoneNumber}" class="error"></div>
+                </div>
+            </div>
+            <div class="form-group">
+            <button type="submit">Register</button>
+            <div th:if="${successMessage}" class="success">
+                <p th:text="${successMessage}"></p>
+            </div>
+            <div th:if="${errorMessage}" class="error-message">
+                <p th:text="${errorMessage}"></p>
+            </div>
+            </div>
+        </form>
+    </div>
+
+
+    <div th:if="${!#lists.isEmpty(members)}">
+        <h2>Registered Members</h2>
+        <table class="simpletablestyle" th:if="${!#lists.isEmpty(members)}">
+            <thead>
+            <tr>
+                <th>Id</th>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Phone #</th>
+                <th>REST URL</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="member : ${members}">
+                <td th:text="${member.id}"></td>
+                <td th:text="${member.name}"></td>
+                <td th:text="${member.email}"></td>
+                <td th:text="${member.phoneNumber}"></td>
+                <td>
+                    <a th:href="@{/rest/members/{id}(id=${member.id})}">/rest/members/<span th:text="${member.id}"></span></a>
+                </td>
+            </tr>
+            </tbody>
+            <tfoot>
+            <tr>
+                <td colspan="5">REST URL for all members: <a th:href="@{/rest/members}">/rest/members</a></td>
+            </tr>
+            </tfoot>
+        </table>
+    </div>
+    <div th:if="${#lists.isEmpty(members)}">
+        <p>No members registered yet.</p>
+    </div>
+</div>
+<!--<div id="aside">-->
+<!--    <p>Learn more about Red Hat JBoss Enterprise Application Platform.</p>-->
+<!--    <ul>-->
+<!--        <li><a href="https://access.redhat.com/documentation/en/red-hat-jboss-enterprise-application-platform/">Documentation</a>-->
+<!--        </li>-->
+<!--        <li><a href="http://www.redhat.com/en/technologies/jboss-middleware/application-platform">Product-->
+<!--            Information</a></li>-->
+<!--    </ul>-->
+<!--</div>-->
+<div id="footer">
+    <p>This project was generated using SpringBoot and Maven.<br/></p>
+</div>
+</div>
+</body>
+</html>

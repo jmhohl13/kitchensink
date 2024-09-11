@@ -4,6 +4,7 @@ import com.jhohl.kitchensink.controller.MemberController;
 import com.jhohl.kitchensink.data.MemberRepository;
 import com.jhohl.kitchensink.model.Member;
 import com.jhohl.kitchensink.service.MemberService;
+import jakarta.validation.ValidationException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,8 +13,11 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.util.Collections;
+
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -35,40 +39,58 @@ public class MemberControllerTests {
     }
 
     @Test
-    public void testRegisterSuccess() throws Exception {
-        mockMvc.perform(post("/members")
-                        .contentType(MediaType.APPLICATION_FORM_URLENCODED)
-                        .param("name", "John Doe")
-                        .param("email", "john@example.com")
-                        .param("phoneNumber", "1234567890"))
-                .andExpect(status().is3xxRedirection())  // Assuming a redirect on success
-                .andExpect(redirectedUrl("/members"));
+    public void testRegisterMemberSuccess() throws Exception {
+        Member member = new Member();
+        member.setName("John");
+        member.setEmail("john@example.com");
+        member.setPhoneNumber("1234567890");
+
+        when(memberService.getMembers()).thenReturn(Collections.singletonList(member));
+
+        mockMvc.perform(post("/")
+                        .flashAttr("newMember", member))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/"))
+                .andExpect(flash().attributeExists("successMessage"))
+                .andExpect(flash().attribute("successMessage", "Member registered successfully!"));
+    }
+    @Test
+    public void testRegisterMemberValidationError() throws Exception {
+        Member member = new Member();
+        member.setEmail("john@example.com");
+        member.setPhoneNumber("1234567890");
+
+        mockMvc.perform(post("/")
+                        .flashAttr("newMember", member))
+                .andExpect(status().isOk())
+                .andExpect(model().attributeHasFieldErrors("newMember", "name"))
+                .andExpect(view().name("home"));
     }
 
     @Test
-    public void testRegisterMemberWithValidationErrors() throws Exception {
-        mockMvc.perform(post("/members")
-                        .param("name", "") // Assuming this should trigger a validation error
-                        .contentType(MediaType.APPLICATION_FORM_URLENCODED))
-                .andExpect(status().is3xxRedirection()) // Check for redirection
-                .andExpect(redirectedUrl("/members"))  // Check redirection URL
-                .andDo(result -> {
-                    // Optionally follow the redirect and check for error messages
-                    mockMvc.perform(get("/members"))
-                            .andExpect(status().isOk())
-                            .andExpect(model().attributeExists("errorMessage"));
-                });
+    public void testRegisterMemberDuplicateEmail() throws Exception {
+        Member member = new Member();
+        member.setName("John");
+        member.setEmail("john@example.com");
+        member.setPhoneNumber("1234567890");
+
+        doThrow(new ValidationException("A user with this email already exists.")).when(memberService).registerNewMember(any(Member.class));
+
+        mockMvc.perform(post("/")
+                        .flashAttr("newMember", member))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/"))
+                .andExpect(flash().attributeExists("errorMessage"))
+                .andExpect(flash().attribute("errorMessage", "A user with this email already exists."));
     }
 
     @Test
-    public void testRegisterUnexpectedError() throws Exception {
-        doThrow(new RuntimeException("Unexpected error")).when(memberService).registerNewMember(any(Member.class));
+    public void testHomePageWithNoMembers() throws Exception {
+        when(memberService.getMembers()).thenReturn(Collections.emptyList());
 
-        mockMvc.perform(post("/members")
-                        .contentType(MediaType.APPLICATION_FORM_URLENCODED)
-                        .param("name", "John Doe")
-                        .param("email", "john@example.com")
-                        .param("phoneNumber", "1234567890"))
-                .andExpect(status().isInternalServerError());  // Assuming you handle exceptions to return 500
+        mockMvc.perform(get("/"))
+                .andExpect(status().isOk())
+                .andExpect(model().attribute("members", Collections.emptyList()))
+                .andExpect(view().name("home"));
     }
 }
