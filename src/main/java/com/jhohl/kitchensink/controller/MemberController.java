@@ -4,6 +4,8 @@ import com.jhohl.kitchensink.model.Member;
 import com.jhohl.kitchensink.service.MemberService;
 import jakarta.validation.Valid;
 import jakarta.validation.ValidationException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -23,6 +25,8 @@ public class MemberController {
     @Autowired
     private MemberService memberService;
 
+    private static final Logger logger = LoggerFactory.getLogger(MemberController.class);
+
     private Member newMember;
 
     @ModelAttribute("newMember")
@@ -32,6 +36,7 @@ public class MemberController {
 
     @GetMapping()
     public String home(Model model) {
+        logger.info("Accessing home page");
         model.addAttribute("newMember", new Member());
         List<Member> members = memberService.getMembers();
         model.addAttribute("members", members);
@@ -42,14 +47,18 @@ public class MemberController {
     @PostMapping
     public String registerMember(@Valid @ModelAttribute("newMember") Member member, BindingResult result, Model model, RedirectAttributes redirectAttrs) {
         if (result.hasErrors()) {
+            logger.warn("Validation failed for member: {}", member.getEmail());
             model.addAttribute("newMember", member);
             model.addAttribute("members", memberService.getMembers());
             return "home";
         }
         try{
             memberService.registerNewMember(member);
+            logger.info("New member registered: {}", member.getEmail());
             redirectAttrs.addFlashAttribute("successMessage", "Member registered successfully!");
         } catch(ValidationException e){
+            logger.error("Error during registration: {}", e.getMessage());
+
             redirectAttrs.addFlashAttribute("errorMessage", e.getMessage());
         }
 

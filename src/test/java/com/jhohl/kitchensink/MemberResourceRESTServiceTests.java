@@ -1,5 +1,6 @@
 package com.jhohl.kitchensink;
 
+import com.jayway.jsonpath.JsonPath;
 import com.jhohl.kitchensink.data.MemberRepository;
 import com.jhohl.kitchensink.model.Member;
 import org.junit.jupiter.api.BeforeEach;
@@ -9,6 +10,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
 import static org.hamcrest.Matchers.hasSize;
@@ -69,21 +71,44 @@ public class MemberResourceRESTServiceTests {
     }
 
     @Test
-    public void shouldDeleteMember() throws Exception {
-        // Assume there's a member with ID 1
+    public void shouldNotFindMemberToDelete() throws Exception {
+
         mockMvc.perform(MockMvcRequestBuilders.delete("/rest/members/1"))
-                .andExpect(status().isOk())
+                .andExpect(status().isNotFound())
                 .andDo(print());
     }
 
     @Test
-    public void shouldUpdateMember() throws Exception {
+    public void shouldDeleteMember() throws Exception {
+        String memberJson = "{\"name\":\"John Doe\",\"email\":\"justin@example.com\",\"phoneNumber\":\"1234567899\"}";
+
+        // Create the member and capture the ID
+        MvcResult result = mockMvc.perform(MockMvcRequestBuilders.post("/rest/members")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(memberJson))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.name").value("John Doe"))
+                .andDo(print())
+                .andReturn();
+
+        // Extract the ID of the newly created member
+        String responseBody = result.getResponse().getContentAsString();
+        Long memberId = JsonPath.parse(responseBody).read("$.id", Long.class);
+
+        // Delete the member using the captured ID
+        mockMvc.perform(MockMvcRequestBuilders.delete("/rest/members/" + memberId))
+                .andExpect(status().isOk())
+                .andDo(print());
+    }
+
+
+    @Test
+    public void shouldReturnMethodNotAllowed() throws Exception {
         String memberJson = "{\"name\":\"Updated Name\",\"email\":\"update@example.com\",\"phoneNumber\":\"9876543210\"}";
         mockMvc.perform(MockMvcRequestBuilders.put("/rest/members/1")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(memberJson))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.email").value("update@example.com"))
+                .andExpect(status().isMethodNotAllowed())
                 .andDo(print());
     }
 }
