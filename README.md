@@ -52,7 +52,7 @@ Run unit and integration tests with:
     ```mvn test```
 
 
-## Features
+## Server Settings
 Server settings can be changed in the application.properties:
 ```bash
 server.port=8080
